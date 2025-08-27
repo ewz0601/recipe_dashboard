@@ -1,7 +1,5 @@
-from flask import Flask, g
+from flask import Flask, g, request, jsonify
 import sqlite3
-import jsonify
-import requests as request
 
 # for next time E: https://www.youtube.com/watch?v=sx8DpAVlocg
 
