@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Recipes</title>
+</head>
+<body>
+    <h1>Recipes</h1>
+
+    {% for recipe in recipes %}
+        <h2>{{ recipe['title'] }}</h2>
+        <b>Ingredients:</b> {{ recipe['ingredients'] }} <br>
+        <b>Amounts:</b> {{ recipe['amounts'] }}<br>
+        <b>Units:</b> {{ recipe['units'] }}<br>
+        <b>Directions:</b> {{ recipe['directions'] }}<br>
+        <hr>
+    {% endfor %}
+
+    <br>
+    <a href="/new_recipe">Add New Recipe</a>
+</body>
+</html>

@@ -39,10 +39,11 @@ def new_recipe():
             "INSERT INTO recipes (title, ingredients, amounts, directions, units) VALUES (?,?,?,?,?)",
             [title, ingredients, amounts, directions, units]
         )
-        db.commit
+        db.commit()
 
         return '<h2> Recipe added successfully </h2><a href="/recipes">View Recipes</a>'
-
+    
+    return render_template('new_recipe.html')
 @app.route('/recipes')
 def view_recipes():
     db = get_db()
