@@ -1,2 +1,2 @@
 .devdbrc
-recipe_database.db
+*.db

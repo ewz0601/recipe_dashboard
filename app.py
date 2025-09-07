@@ -1,4 +1,4 @@
-from flask import Flask, g, request, jsonify
+from flask import Flask, g, request, jsonify, render_template
 import sqlite3
 
 # for next time E: https://www.youtube.com/watch?v=sx8DpAVlocg
@@ -25,24 +25,35 @@ def close_db(error):
 def index():
     return '<h1>Hello, World!</h1>'
 
-@app.route('/users')
-def viewusers():
-    db = get_db()
-    cursor = db.execute('SELECT id, name, age FROM users')
-    results = cursor.fetchall()
-    if results:
-        return f"<h1>The ID is {results[0]['id']}. <br> The name is {results[0]['name']}.<br> The age is {results[0]['age']}. <br>"
-    else:
-        return "<h1>No users found.</h1>"
+@app.route('/new_recipe', methods = ['GET', 'POST'])
+def new_recipe():
+    if request.method == 'POST':
+        title = request.form['title']
+        ingredients = request.form['ingredients']
+        amounts = request.form['amounts']
+        directions = request.form['directions']
+        units = request.form['units']
 
-@app.route('/users', methods = ['post'])
-def create_user():
+        db = get_db()
+        db.execute(
+            "INSERT INTO recipes (title, ingredients, amounts, directions, units) VALUES (?,?,?,?,?)",
+            [title, ingredients, amounts, directions, units]
+        )
+        db.commit()
+
+        return '<h2> Recipe added successfully </h2><a href="/recipes">View Recipes</a>'
+    
+    return render_template('new_recipe.html')
+@app.route('/recipes')
+def view_recipes():
     db = get_db()
-    name = request.json['name']
-    age = request.json['age']
-    db.execute('INSERT INTO users (name, age) VALUES (?,?)', [name, age])
-    db.commit()
-    return jsonify({'message': 'User created successfully!'})
+    cursor = db.execute('SELECT title, ingredients, amounts, units, directions FROM recipes')
+    results = cursor.fetchall()
+    if  not results:
+        return "<h1> No recipes found.</h1>"
+    
+    return render_template("recipes.html", recipes = results)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
