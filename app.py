@@ -44,15 +44,30 @@ def new_recipe():
         return '<h2> Recipe added successfully </h2><a href="/recipes">View Recipes</a>'
     
     return render_template('new_recipe.html')
+
 @app.route('/recipes')
 def view_recipes():
     db = get_db()
-    cursor = db.execute('SELECT title, ingredients, amounts, units, directions FROM recipes')
-    results = cursor.fetchall()
-    if  not results:
-        return "<h1> No recipes found.</h1>"
-    
-    return render_template("recipes.html", recipes = results)
+
+    # Get all recipe names for dropdown
+    cursor = db.execute('SELECT id, title FROM recipes')
+    recipe_list = cursor.fetchall()
+
+    # Get the id of the selected recipe (this comes from the html form)
+    selected_id = request.args.get('id')
+    selected_recipe = None
+
+    # If there an id selected, pull all the columns for that id
+    if selected_id:
+        cursor = db.execute(
+            'SELECT * FROM recipes WHERE id = ?',
+            [selected_id]
+        )
+        selected_recipe = cursor.fetchone()
+
+    return render_template("recipes.html", 
+                           recipes = recipe_list,
+                           selected = selected_recipe)
 
 
 if __name__ == '__main__':

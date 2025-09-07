@@ -1,19 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>All Recipes</title>
+    <title>Recipes</title>
 </head>
 <body>
     <h1>Recipes</h1>
 
-    {% for recipe in recipes %}
-        <h2>{{ recipe['title'] }}</h2>
-        <b>Ingredients:</b> {{ recipe['ingredients'] }} <br>
-        <b>Amounts:</b> {{ recipe['amounts'] }}<br>
-        <b>Units:</b> {{ recipe['units'] }}<br>
-        <b>Directions:</b> {{ recipe['directions'] }}<br>
-        <hr>
-    {% endfor %}
+    <form method="GET" action="/recipes">
+        <label for = "id">Choose a recipe:</label>
+        <select name = "id" id = "id">
+            {% for recipe in recipes %}
+                <option value = "{{recipe['id']}}"
+                    {% if selected and selected['id'] == recipe['id'] %}selected{% endif %}>
+                    {{ recipe['title'] }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit">View</button>
+    </form>
+
+    <hr>
+
+    {% if selected %}
+        <h2>{{ selected['title'] }}</h2>
+        <b>Ingredients:</b> {{ selected['ingredients'] }} <br>
+        <b>Amounts:</b> {{ selected['amounts'] }}<br>
+        <b>Units:</b> {{ selected['units'] }}<br>
+        <b>Directions:</b> {{ selected['directions'] }}<br>
+    {% else %}
+        <p> No recipe selected yet.</p>
+    {% endif %}
 
     <br>
     <a href="/new_recipe">Add New Recipe</a>
