@@ -1,29 +1,9 @@
-from flask import Flask, g, request, jsonify, render_template
-import sqlite3
-
-# for next time E: https://www.youtube.com/watch?v=sx8DpAVlocg
+from flask import Flask, g, request, render_template
+from flash_setup import get_db, init_app
 
 app = Flask(__name__)
 
-
-def connect_db():
-    sql = sqlite3.connect('./recipe_database.db')
-    sql.row_factory = sqlite3.Row
-    return sql
-
-def get_db():
-    if not hasattr(g, 'sqlite3_db'):
-        g.sqlite3_db = connect_db()
-    return g.sqlite3_db
-
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'sqlite3_db'):
-        g.sqlite3_db.close()
-
-@app.route('/')
-def index():
-    return '<h1>Hello, World!</h1>'
+init_app(app)
 
 @app.route('/new_recipe', methods = ['GET', 'POST'])
 def new_recipe():
@@ -41,11 +21,11 @@ def new_recipe():
         )
         db.commit()
 
-        return '<h2> Recipe added successfully </h2><a href="/recipes">View Recipes</a>'
+        return '<h2> Recipe added successfully </h2><a href="/">View Recipes</a>'
     
     return render_template('new_recipe.html')
 
-@app.route('/recipes')
+@app.route('/')
 def view_recipes():
     db = get_db()
 
