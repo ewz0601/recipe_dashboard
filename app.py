@@ -1,32 +1,26 @@
-from flask import Flask, g, request, jsonify, render_template
-import sqlite3
-
-# for next time E: https://www.youtube.com/watch?v=sx8DpAVlocg
+from flask import Flask, g, request, render_template
+from flash_setup import get_db, init_app
 
 app = Flask(__name__)
 
+init_app(app)
 
-def connect_db():
-    sql = sqlite3.connect('./recipe_database.db')
-    sql.row_factory = sqlite3.Row
-    return sql
+@app.route('/new_recipe', methods=['GET', 'POST'])
+def create_new_recipe():
+    """
+    Handle the creation of a new recipe.
 
-def get_db():
-    if not hasattr(g, 'sqlite3_db'):
-        g.sqlite3_db = connect_db()
-    return g.sqlite3_db
+    GET:
+        Render the new recipe form template.
 
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'sqlite3_db'):
-        g.sqlite3_db.close()
+    POST:
+        Accept form data (title, ingredients, amounts, units, directions),
+        insert a new recipe into the database, and confirm success.
 
-@app.route('/')
-def index():
-    return '<h1>Hello, World!</h1>'
-
-@app.route('/new_recipe', methods = ['GET', 'POST'])
-def new_recipe():
+    Returns:
+        str | Response: Success message with link to recipes list (POST),
+        or rendered HTML template for recipe creation (GET).
+    """
     if request.method == 'POST':
         title = request.form['title']
         ingredients = request.form['ingredients']
@@ -41,18 +35,49 @@ def new_recipe():
         )
         db.commit()
 
-        return '<h2> Recipe added successfully </h2><a href="/recipes">View Recipes</a>'
+        return '<h2> Recipe added successfully </h2><a href="/">View Recipes</a>'
     
     return render_template('new_recipe.html')
-@app.route('/recipes')
+
+
+@app.route('/')
 def view_recipes():
+    """
+    Display a list of all recipes and details for a selected recipe.
+
+    Retrieves all recipe titles for a dropdown list. If a recipe ID is
+    provided in query parameters, fetch its details.
+
+    Query Parameters:
+        id (int, optional): The ID of the recipe to display in detail.
+
+    Returns:
+        Response: Rendered HTML template with recipe list and optionally
+        selected recipe details.
+    """
     db = get_db()
-    cursor = db.execute('SELECT title, ingredients, amounts, units, directions FROM recipes')
-    results = cursor.fetchall()
-    if  not results:
-        return "<h1> No recipes found.</h1>"
-    
-    return render_template("recipes.html", recipes = results)
+
+    # Get all recipe names for dropdown
+    cursor = db.execute('SELECT id, title FROM recipes')
+    recipe_list = cursor.fetchall()
+
+    # Get the id of the selected recipe (this comes from the html form)
+    selected_id = request.args.get('id')
+    selected_recipe = None
+
+    # If there is an id selected, pull all the columns for that id
+    if selected_id:
+        cursor = db.execute(
+            'SELECT * FROM recipes WHERE id = ?',
+            [selected_id]
+        )
+        selected_recipe = cursor.fetchone()
+
+    return render_template(
+        "recipes.html",
+        recipes=recipe_list,
+        selected=selected_recipe
+    )
 
 
 if __name__ == '__main__':
